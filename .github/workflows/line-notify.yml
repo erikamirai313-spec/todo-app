@@ -1,0 +1,31 @@
+# 毎朝、アプリの /cron/notify を呼び出して LINE に期日のお知らせを送る
+# Render の無料プランには定期実行の機能がないので、GitHub Actions で代わりに呼び出す
+name: 毎朝のLINE通知
+
+on:
+  schedule:
+    # 毎日 23:00（世界標準時）＝ 日本時間 朝8:00
+    # ※ GitHub が混んでいると10〜30分ほど遅れることがあります
+    - cron: "0 23 * * *"
+  workflow_dispatch: # GitHub の画面から手動でも実行できるようにする
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: アプリを呼び出して通知する
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          # 無料プランのアプリは寝ていることがあるので、起きるまで最大3回試す
+          for i in 1 2 3; do
+            if curl -fsS --max-time 90 "$APP_URL/cron/notify?key=$CRON_SECRET"; then
+              echo ""
+              echo "OK"
+              exit 0
+            fi
+            echo "失敗したので30秒後にもう一度試します（$i 回目）"
+            sleep 30
+          done
+          exit 1

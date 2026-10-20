@@ -1,32 +1,77 @@
 {% extends "base.html" %}
 {% block content %}
+{% set next_url = request.full_path %}
+
 <div class="page-head">
   <h1>やることリスト</h1>
-  <p class="count">{{ todos|length }} 件</p>
+  {% if line_enabled %}
+  <form action="{{ url_for('notify_now') }}" method="post" class="notify-form">
+    <input type="hidden" name="next" value="{{ next_url }}">
+    <button type="submit" class="btn btn-line" data-loading="送信中…">LINEに通知</button>
+  </form>
+  {% endif %}
 </div>
+
+{# ---- 絞り込み：完了状態 ---- #}
+<nav class="tabs">
+  {% for key, label in [("todo", "未完了"), ("done", "完了済み"), ("all", "すべて")] %}
+  <a href="{{ url_for('index', status=key, category=category or None) }}"
+     class="tab {% if status == key %}is-active{% endif %}">
+    {{ label }}<span class="tab-count">{{ counts[key] }}</span>
+  </a>
+  {% endfor %}
+</nav>
+
+{# ---- 絞り込み：カテゴリ ---- #}
+{% if categories %}
+<div class="chips">
+  <a href="{{ url_for('index', status=status) }}"
+     class="chip {% if not category %}is-active{% endif %}">すべて</a>
+  {% for c in categories %}
+  <a href="{{ url_for('index', status=status, category=c) }}"
+     class="chip {% if category == c %}is-active{% endif %}">{{ c }}</a>
+  {% endfor %}
+</div>
+{% endif %}
 
 {% if todos %}
 <ul class="todo-list">
   {% for todo in todos %}
-  {% set overdue = todo.due_date and todo.due_date < today %}
-  {% set is_today = todo.due_date == today %}
-  <li class="todo-card {% if overdue %}is-overdue{% elif is_today %}is-today{% endif %}">
+  {% set overdue = not todo.done and todo.due_date and todo.due_date < today %}
+  {% set is_today = not todo.done and todo.due_date == today %}
+  <li class="todo-card {% if todo.done %}is-done{% elif overdue %}is-overdue{% elif is_today %}is-today{% endif %}">
+
+    {# 完了チェック #}
+    <form action="{{ url_for('toggle', todo_id=todo.id) }}" method="post" class="check-form">
+      <input type="hidden" name="next" value="{{ next_url }}">
+      <input type="hidden" name="done" value="{{ '0' if todo.done else '1' }}">
+      <button type="submit" class="check {% if todo.done %}is-checked{% endif %}"
+              aria-label="{{ '未完了に戻す' if todo.done else '完了にする' }}"
+              title="{{ '未完了に戻す' if todo.done else '完了にする' }}">✓</button>
+    </form>
+
     <div class="todo-main">
       <div class="todo-due">
         <span class="due-label">期日</span>
         <span class="due-date">{{ todo.due_date }}</span>
-        {% if overdue %}<span class="badge badge-red">期限切れ</span>
+        {% if todo.done %}<span class="badge badge-green">完了</span>
+        {% elif overdue %}<span class="badge badge-red">期限切れ</span>
         {% elif is_today %}<span class="badge badge-yellow">今日まで</span>{% endif %}
+        {% if todo.category %}
+        <a href="{{ url_for('index', status=status, category=todo.category) }}" class="badge badge-cat">{{ todo.category }}</a>
+        {% endif %}
       </div>
       <h2 class="todo-title">{{ todo.title }}</h2>
       {% if todo.content %}<p class="todo-content">{{ todo.content }}</p>{% endif %}
       <p class="todo-meta">更新：{{ todo.updated_at }}</p>
     </div>
+
     <div class="todo-actions">
       <a href="{{ url_for('edit', todo_id=todo.id) }}" class="btn btn-ghost">編集</a>
       <form action="{{ url_for('delete', todo_id=todo.id) }}" method="post"
             data-msg="「{{ todo.title }}」を削除しますか？"
             onsubmit="return confirm(this.dataset.msg);">
+        <input type="hidden" name="next" value="{{ next_url }}">
         <button type="submit" class="btn btn-danger">削除</button>
       </form>
     </div>
@@ -35,8 +80,14 @@
 </ul>
 {% else %}
 <div class="empty">
-  <p>まだ「やること」はありません</p>
-  <a href="{{ url_for('new') }}" class="btn btn-primary">最初のやることを登録する</a>
+  {% if status == "todo" and counts.all %}
+    <p>未完了のやることはありません。すばらしい！🎉</p>
+  {% elif status == "done" %}
+    <p>完了済みのやることはまだありません</p>
+  {% else %}
+    <p>まだ「やること」はありません</p>
+    <a href="{{ url_for('new', category=category or None) }}" class="btn btn-primary">やることを登録する</a>
+  {% endif %}
 </div>
 {% endif %}
 {% endblock %}

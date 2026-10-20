@@ -166,3 +166,96 @@ body {
   .todo-actions { flex-direction: row; justify-content: flex-end; }
   .header .btn { padding: 6px 12px; }
 }
+
+/* ===== 課題2で追加 ===== */
+:root {
+  --line-green: #06c755;
+  --line-green-dark: #05a647;
+  --chip-bg: #f3eee6;
+}
+
+.page-head { justify-content: flex-start; align-items: center; flex-wrap: wrap; }
+.notify-form { margin: 0 0 0 auto; }
+
+.btn:disabled { opacity: .6; cursor: wait; }
+.btn-line { background: var(--line-green); color: #fff; }
+.btn-line:hover { background: var(--line-green-dark); }
+
+/* 完了状態のタブ */
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--chip-bg);
+  padding: 4px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+.tab {
+  flex: 1;
+  text-align: center;
+  padding: 6px 8px;
+  border-radius: 999px;
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+}
+.tab.is-active { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.tab-count { font-size: 12px; margin-left: 6px; color: var(--muted); }
+
+/* カテゴリのチップ */
+.chips, .chip-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+.chip-picker { margin: -6px 0 0; }
+.chip {
+  font: inherit;
+  font-size: 13px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+}
+.chip:hover { border-color: var(--primary); }
+.chip.is-active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+.badge-green { background: var(--green-bg); color: var(--green); }
+.badge-cat { background: var(--chip-bg); color: var(--text); text-decoration: none; font-weight: 500; }
+.badge-cat:hover { background: #e9e1d4; }
+
+/* 完了チェックの丸ボタン */
+.check-form { margin: 0; flex-shrink: 0; }
+.check {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  background: #fff;
+  color: transparent;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  transition: all .15s;
+}
+.check:hover { border-color: var(--green); color: var(--green); }
+.check.is-checked { background: var(--green); border-color: var(--green); color: #fff; }
+.check:disabled { opacity: .5; cursor: wait; }
+
+.todo-main { flex: 1; }
+
+/* 完了したカード */
+.todo-card.is-done { opacity: .65; border-left-color: var(--green); }
+.todo-card.is-done .todo-title { text-decoration: line-through; color: var(--muted); }
+
+/* フォーム：期日とカテゴリを横並び */
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+@media (max-width: 520px) {
+  .todo-card { flex-direction: row; flex-wrap: wrap; }
+  .todo-main { flex: 1 1 calc(100% - 50px); }
+  .todo-actions { flex: 1 1 100%; flex-direction: row; justify-content: flex-end; }
+  .field-row { grid-template-columns: 1fr; }
+  .tab { font-size: 13px; }
+}
