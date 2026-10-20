@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-head">
+  <h1>やることリスト</h1>
+  <p class="count">{{ todos|length }} 件</p>
+</div>
+
+{% if todos %}
+<ul class="todo-list">
+  {% for todo in todos %}
+  {% set overdue = todo.due_date and todo.due_date < today %}
+  {% set is_today = todo.due_date == today %}
+  <li class="todo-card {% if overdue %}is-overdue{% elif is_today %}is-today{% endif %}">
+    <div class="todo-main">
+      <div class="todo-due">
+        <span class="due-label">期日</span>
+        <span class="due-date">{{ todo.due_date }}</span>
+        {% if overdue %}<span class="badge badge-red">期限切れ</span>
+        {% elif is_today %}<span class="badge badge-yellow">今日まで</span>{% endif %}
+      </div>
+      <h2 class="todo-title">{{ todo.title }}</h2>
+      {% if todo.content %}<p class="todo-content">{{ todo.content }}</p>{% endif %}
+      <p class="todo-meta">更新：{{ todo.updated_at }}</p>
+    </div>
+    <div class="todo-actions">
+      <a href="{{ url_for('edit', todo_id=todo.id) }}" class="btn btn-ghost">編集</a>
+      <form action="{{ url_for('delete', todo_id=todo.id) }}" method="post"
+            data-msg="「{{ todo.title }}」を削除しますか？"
+            onsubmit="return confirm(this.dataset.msg);">
+        <button type="submit" class="btn btn-danger">削除</button>
+      </form>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+<div class="empty">
+  <p>まだ「やること」はありません</p>
+  <a href="{{ url_for('new') }}" class="btn btn-primary">最初のやることを登録する</a>
+</div>
+{% endif %}
+{% endblock %}

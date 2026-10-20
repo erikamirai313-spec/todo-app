@@ -1,0 +1,7 @@
+# 鍵やパスワードはGitHubに上げない！
+.env
+credentials.json
+__pycache__/
+*.pyc
+.venv/
+venv/
