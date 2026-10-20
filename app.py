@@ -1,6 +1,6 @@
 """Todoリストアプリ（Flask）"""
 import os
-from datetime import date
+from datetime import datetime, timedelta, timezone
 
 from dotenv import load_dotenv
 from flask import Flask, abort, flash, redirect, render_template, request, url_for
@@ -30,7 +30,8 @@ def _read_form():
 def index():
     """一覧ページ"""
     todos = sheets.get_all_todos()
-    return render_template("index.html", todos=todos, today=date.today().isoformat())
+    today = datetime.now(timezone(timedelta(hours=9))).date().isoformat()
+    return render_template("index.html", todos=todos, today=today)
 
 
 @app.route("/new", methods=["GET", "POST"])
